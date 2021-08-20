@@ -1,0 +1,10 @@
+.center {
+    text-align: center;
+    margin: auto;
+}
+
+#header {
+    font-weight: bold;
+    font-size: 24px;
+    font-family: sans-serif;
+}
