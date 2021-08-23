@@ -32,17 +32,27 @@ function getAllSaved() {
     print(file_get_contents(DATA_PATH));
 }
 
-function loadCsv() {
-    $file = fopen(DATA_PATH, "r");
-    $data = fgetcsv($file);
-    fclose($file);
-    return $data;
-}
+class CSV {
+    public $path;
+    public $data;
 
-function overwriteCsv($data) {
-    $file = fopen(DATA_PATH, "w+");
-    fputcsv($file, $data);
-    fclose($file);
+    public function __construct($path) {
+        $this->path = $path;
+        $rawData = file_get_contents($path);
+        $rawData = $rawData.split("\n");
+        for ($rawData as $line) {
+            ($this->data)
+        }
+    }
+
+    public function putRecord($data) {
+        $this->
+    }
+
+    public function writeCsv() {
+        $file = fopen($path);
+        for ($line in $data.split)
+    }
 }
 
 function generateRandomString($length) {

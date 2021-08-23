@@ -4,12 +4,16 @@ window.onload = function() {
 }
 
 function getAllCallback(respText) {
-    var respCsv = respText.split(",");
+    var respCsv = respText.split("\n")[0].split(",");
     for (var i = 0; i < respCsv.length; i++) {
         const inSel = "select[id=\"" + Math.floor(i / 7) + "-" + (i % 7) + "\"]";
         var input = document.querySelector(inSel);
         input.value = respCsv[i];
     }
+}
+
+function archiveMeals() {
+    
 }
 
 function updateMeal(e) {
