@@ -1,26 +1,46 @@
 window.onload = function() {
-    populateTable();
+    createMainTable();
+    populateMainTable();
     backendRequest("get", "", getAllCallback);
 }
 
 function getAllCallback(respText) {
-    var respCsv = respText.split("\n")[0].split(",");
-    for (var i = 0; i < respCsv.length; i++) {
-        const inSel = "select[id=\"" + Math.floor(i / 7) + "-" + (i % 7) + "\"]";
-        var input = document.querySelector(inSel);
-        input.value = respCsv[i];
+    var respLines = respText.split("\n");
+    for (var r = 0; r < Math.min(3, respLines.length); r++) {
+        var respRecords = respLines[r].split(",");
+        for (var c = 0; c < respRecords.length; c++) {
+            const inSel = "select[id=\"" + r + "-" + c + "\"]";
+            var input = document.querySelector(inSel);
+            input.value = respRecords[c];
+        }
     }
-}
-
-function archiveMeals() {
-    
 }
 
 function updateMeal(e) {
     backendRequest("update", [ e.id, e.value ]);
 }
 
-function populateTable() {
+function archiveMeals() {
+    backendRequest("archive", "", archiveMealsCallback);
+}
+
+function archiveMealsCallback(respText) {
+    var selects = document.getElementsByTagName("select");
+    for (var i = 0; i < selects.length; i++) {
+        selects[i].selectedIndex = 0;
+    }
+}
+
+function analyzeMeals() {
+    //TODO generate collapsable table with all past elements as data, copy from template
+    //TODO calculate statistics and display, with graphs?
+}
+
+function createMainTable() {
+    //TODO use template to generate main table
+}
+
+function populateMainTable() {
     var tbody = document.getElementsByTagName("tbody")[0];
     
     for (var i = 0; i < 3; i++) {

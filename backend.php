@@ -12,24 +12,33 @@ if (isset($reqEndpoint) && isset($reqData)) {
         $arrData = explode(",", $reqData);
     }
     switch ($reqEndpoint) {
+        case "get":
+            getAllSaved();
+            break;
         case "update":
             mealUpdate($arrData);
             break;
-        case "get":
-            getAllSaved();
+        case "archive":
+            mealArchive();
             break;
     }
 }
 
-function mealUpdate($data) {
-    $idx = (substr($data[0], 0, 1) * 7) + substr($data[0], 2, 1);
-    $csv = loadCsv();
-    $csv[$idx] = $data[1];
-    overwriteCsv($csv);
-}
-
 function getAllSaved() {
     print(file_get_contents(DATA_PATH));
+}
+
+function mealUpdate($data) {
+    $csv = new CSV(DATA_PATH);
+    $csv->putRecord(substr($data[0], 0, 1), substr($data[0], 2, 1), $data[1]);
+    $csv->writeCsv();
+}
+
+function mealArchive() {
+    $csv = new CSV(DATA_PATH);
+    $csv->shiftRecords(3);
+    $csv->insertRange(3, 7);
+    $csv->writeCsv();
 }
 
 class CSV {
@@ -38,24 +47,58 @@ class CSV {
 
     public function __construct($path) {
         $this->path = $path;
+        $this->data = array();
+
         $rawData = file_get_contents($path);
-        $rawData = $rawData.split("\n");
-        for ($rawData as $line) {
-            ($this->data)
+        $rawData = explode("\n", $rawData);
+        $rowIdx = 0;
+        foreach ($rawData as $line) {
+            $colIdx = 0;
+            $this->data[$rowIdx] = array();
+            foreach (explode(",", $line) as $record) {
+                $this->data[$rowIdx][$colIdx] = $record;
+                $colIdx++;
+            }
+            $rowIdx++;
         }
     }
 
-    public function putRecord($data) {
-        $this->
+    public function putRecord($rowIdx, $colIdx, $value) {
+        $this->data[$rowIdx][$colIdx] = $value;
+    }
+
+    public function insertRange($numRows, $numCols, $startRow = 0, $value = "") {
+        for ($r = 0; $r < $numRows; $r++) {
+            for ($c = 0; $c < $numCols; $c++) {
+                $this->data[$startRow + $r][$c] = $value;
+            }
+        }
+    }
+
+    public function shiftRecords($numShiftRows) {
+        for ($r = count($this->data) - 1; $r >= 0; $r--) {
+            for ($c = count($this->data[$r]) - 1; $c >= 0; $c--) {
+                $this->data[$r + $numShiftRows][$c] = $this->data[$r][$c];
+            }
+        }
     }
 
     public function writeCsv() {
-        $file = fopen($path);
-        for ($line in $data.split)
+        $writeData = "";
+        foreach ($this->data as $line) {
+            foreach ($line as $record) {
+                $writeData .= $record . ",";
+            }
+            $writeData = substr($writeData, 0, -1) . "\n";
+        }
+        $writeData = substr($writeData, 0, -1);
+        $file = fopen($this->path, "w+");
+        fwrite($file, $writeData);
+        fclose($file);
     }
 }
 
 function generateRandomString($length) {
-	return substr(str_shuffle(str_repeat($x='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' , ceil($length/strlen($x)) )),1,$length);
+	return substr(str_shuffle(str_repeat($x='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil($length/strlen($x)))), 1, $length);
 }
 ?>
