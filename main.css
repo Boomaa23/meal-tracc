@@ -1,5 +1,7 @@
 body {
     width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
 }
 
 .center {
@@ -7,8 +9,26 @@ body {
     margin: auto;
 }
 
+.hidden {
+    display: none;
+}
+
 #header {
     font-weight: bold;
     font-size: 24px;
     font-family: sans-serif;
+}
+
+#past-data table {
+    border-collapse: collapse;
+}
+
+#past-data th, #past-data td {
+    border: 1px solid grey;
+    padding: 4px;
+}
+
+#collapse-data-past {
+    display: none;
+    margin-bottom: 10px;
 }

@@ -18,6 +18,9 @@ if (isset($reqEndpoint) && isset($reqData)) {
         case "update":
             mealUpdate($arrData);
             break;
+        case "reset":
+            mealReset();
+            break;
         case "archive":
             mealArchive();
             break;
@@ -31,6 +34,12 @@ function getAllSaved() {
 function mealUpdate($data) {
     $csv = new CSV(DATA_PATH);
     $csv->putRecord(substr($data[0], 0, 1), substr($data[0], 2, 1), $data[1]);
+    $csv->writeCsv();
+}
+
+function mealReset() {
+    $csv = new CSV(DATA_PATH);
+    $csv->insertRange(3, 7);
     $csv->writeCsv();
 }
 
@@ -96,9 +105,5 @@ class CSV {
         fwrite($file, $writeData);
         fclose($file);
     }
-}
-
-function generateRandomString($length) {
-	return substr(str_shuffle(str_repeat($x='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil($length/strlen($x)))), 1, $length);
 }
 ?>

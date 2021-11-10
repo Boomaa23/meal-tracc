@@ -6,23 +6,16 @@
 </head>
 <body>
     <div id="header" class="center">meal-tracc</div><br />
-    <table class="center">
-        <tr>
-            <th>Sunday</th>
-            <th>Monday</th>
-            <th>Tuesday</th>
-            <th>Wednesday</th>
-            <th>Thursday</th>
-            <th>Friday</th>
-            <th>Saturday</th>
-        </tr>
-        <tbody></tbody>
-    </table><br />
+    <div id="main-table"></div><br />
     <div class="center">
         <button onclick="resetMeals()">Reset</button>
         <button onclick="archiveMeals()">Archive</button>
-        <button onclick="analyzeData()">Past Data</button>
+        <button onclick="analyzeData(this)">Past Data</button>
+    </div><br />
+    <div class="center">
+        <button id="collapse-data-past" onclick="collapseData()">Collapse Data (Toggle)</button>
     </div>
+    <div id="past-data" class="center"></div>
     <template id="input-template">
         <select>
             <option value=""></option>

@@ -1,7 +1,7 @@
 window.onload = function() {
     createMainTable();
     populateMainTable();
-    backendRequest("get", "", getAllCallback);
+    backendRequest("get", "", getAllCallback, 1);
 }
 
 function getAllCallback(respText) {
@@ -21,23 +21,62 @@ function updateMeal(e) {
 }
 
 function archiveMeals() {
-    backendRequest("archive", "", archiveMealsCallback);
+    backendRequest("archive", "", deselectAllMeals);
 }
 
-function archiveMealsCallback(respText) {
+function deselectAllMeals() {
     var selects = document.getElementsByTagName("select");
     for (var i = 0; i < selects.length; i++) {
         selects[i].selectedIndex = 0;
     }
 }
 
-function analyzeMeals() {
-    //TODO generate collapsable table with all past elements as data, copy from template
+function resetMeals() {
+    backendRequest("reset", "", deselectAllMeals);
+}
+
+function analyzeData(btn) {
     //TODO calculate statistics and display, with graphs?
+    backendRequest("get", "", function(respText) {
+        var respLines = respText.split("\n");
+        if (respLines.length <= 3) {
+            return;
+        }
+        var pastData = document.getElementById("past-data");
+        var tableTemplate = document.getElementById("week-table-template");
+        var clonedTable = tableTemplate.content.cloneNode(true);
+        var tbody = clonedTable.querySelector("tbody");
+
+        for (var r = 3; r < respLines.length; r++) {
+            var respRecords = respLines[r].split(",");
+            var tableRow = document.createElement("tr");
+            for (var c = 0; c < respRecords.length; c++) {
+                var cell = document.createElement("td");
+                cell.innerText = respRecords[c];
+                tableRow.appendChild(cell);
+            }
+            tbody.appendChild(tableRow);
+        }
+        pastData.appendChild(clonedTable);
+
+        document.getElementById("collapse-data-past").style.display = "inline";
+        btn.disabled = true;
+    }, 1);
+}
+
+function collapseData() {
+    var tableContainer = document.getElementById("past-data");
+    if (tableContainer.style.display === "none") {
+        tableContainer.style.display = "block";
+    } else {
+        tableContainer.style.display = "none";
+    }
 }
 
 function createMainTable() {
-    //TODO use template to generate main table
+    var tableLoc = document.getElementById("main-table");
+    var tableTemplate = document.getElementById("week-table-template");
+    tableLoc.appendChild(tableTemplate.content.cloneNode(true));
 }
 
 function populateMainTable() {
@@ -58,13 +97,14 @@ function populateMainTable() {
     }
 }
 
-function backendRequest(endpoint, data, callback = null, doLog = true) {
+// logLevel (inclusive): 0 = none,  1 = endpoint/data/url, 2 = response
+function backendRequest(endpoint, data, callback = null, logLevel = 2) {
     var xhr = new XMLHttpRequest();
     var url = "backend.php?endpoint=" + encodeURIComponent(endpoint);
     if (data !== null) {
         url += "&data=" + btoa(encodeURIComponent(data));
     }
-    if (doLog) {
+    if (logLevel >= 1) {
         console.log("\n");
         console.log(endpoint + ": " + data);
         console.log(url);
@@ -73,7 +113,7 @@ function backendRequest(endpoint, data, callback = null, doLog = true) {
     xhr.send();
     xhr.onload = function() {
         if (xhr.status === 200) {
-            if (doLog) {
+            if (logLevel >= 2) {
                 console.log(xhr.responseText);
             }
             if (callback !== null) {
