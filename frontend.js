@@ -36,15 +36,14 @@ function resetMeals() {
 }
 
 function analyzeData(btn) {
-    //TODO calculate statistics and display, with graphs?
     backendRequest("get", "", function(respText) {
         var respLines = respText.split("\n");
         if (respLines.length <= 3) {
             return;
         }
         var pastData = document.getElementById("past-data");
-        var tableTemplate = document.getElementById("week-table-template");
-        var clonedTable = tableTemplate.content.cloneNode(true);
+        var weekTableTemplate = document.getElementById("week-table-template");
+        var clonedTable = weekTableTemplate.content.cloneNode(true);
         var tbody = clonedTable.querySelector("tbody");
 
         for (var r = 3; r < respLines.length; r++) {
@@ -57,11 +56,37 @@ function analyzeData(btn) {
             }
             tbody.appendChild(tableRow);
         }
+
+        var statsContainer = document.getElementById("stats-table");
+        var statsTable = weekTableTemplate.content.cloneNode(true);
+
+        var stats = computeStats(respLines);
+        statsTable.appendChild(makeTableRow(stats[0].concat("Dining Hall")))
+        statsTable.appendChild(makeTableRow(stats[1].concat("Outside")))
+        statsTable.appendChild(makeTableRow(stats[2].concat("Not Eaten")))
+
+        statsContainer.appendChild(statsTable);
+
+        pastData.appendChild(statsContainer);
         pastData.appendChild(clonedTable);
 
-        document.getElementById("collapse-data-past").style.display = "inline";
+        document.getElementById("stats-top").style.display = "block";
         btn.disabled = true;
     }, 1);
+}
+
+function makeTableRow(cells) {
+    var row = document.createElement("tr");
+    var col = document.createElement("td");
+    for (var i = 0; i < cells.length; i++) {
+        col.innerText = cells[i];
+        row.appendChild(col.cloneNode(true));
+    }
+    return row
+}
+
+function computeStats(respLines) {
+    var resp
 }
 
 function collapseData() {

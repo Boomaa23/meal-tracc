@@ -12,8 +12,9 @@
         <button onclick="archiveMeals()">Archive</button>
         <button onclick="analyzeData(this)">Past Data</button>
     </div><br />
-    <div class="center">
-        <button id="collapse-data-past" onclick="collapseData()">Collapse Data (Toggle)</button>
+    <div class="center" id="stats-top">
+        <button onclick="collapseData()">Collapse Data (Toggle)</button>
+        <div id="stats-table"></div>
     </div>
     <div id="past-data" class="center"></div>
     <template id="input-template">
