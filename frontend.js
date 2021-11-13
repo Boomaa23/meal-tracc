@@ -35,17 +35,63 @@ function resetMeals() {
     backendRequest("reset", "", deselectAllMeals);
 }
 
+class StatsAccumulator {
+    constructor() {
+        this.mealsByDay = [0, 0, 0, 0, 0, 0, 0];
+        this.dhMBD = [0, 0, 0, 0, 0, 0, 0];
+        this.outMBD = [0, 0, 0, 0, 0, 0, 0];
+        this.noneMBD = [0, 0, 0, 0, 0, 0, 0];
+    }
+
+    addMeal(source, dayIdx) {
+        source = source.trim();
+        if (source !== "") {
+            this.mealsByDay[dayIdx]++;
+        }
+        switch (source) {
+            case "dining-hall":
+                this.dhMBD[dayIdx]++;
+                break;
+            case "outside":
+                this.outMBD[dayIdx]++;
+                break;
+            case "not-eaten":
+                this.noneMBD[dayIdx]++;
+                break;
+        }
+    }
+
+    calcMealPct(data, total) {
+        const pct = Math.round((data / total) * 100);
+        return isNaN(pct) ? 0 : pct;
+    }
+
+    reformatData() {
+        for (var i = 0; i < 7; i++) {
+            const dayTotal = this.mealsByDay[i];
+            this.dhMBD[i] = this.calcMealPct(this.dhMBD[i], dayTotal) + "%";
+            this.outMBD[i] = this.calcMealPct(this.outMBD[i], dayTotal) + "%";
+            this.noneMBD[i] = this.calcMealPct(this.noneMBD[i], dayTotal) + "%";
+        }
+        this.mealsByDay.unshift("Total");
+        this.dhMBD.unshift("Dining Hall");
+        this.outMBD.unshift("Outside");
+        this.noneMBD.unshift("Not Eaten");
+    }
+}
+
 function analyzeData(btn) {
     backendRequest("get", "", function(respText) {
         var respLines = respText.split("\n");
         if (respLines.length <= 3) {
             return;
         }
-        var pastData = document.getElementById("past-data");
+        var pastDataDiv = document.getElementById("past-data");
         var weekTableTemplate = document.getElementById("week-table-template");
-        var clonedTable = weekTableTemplate.content.cloneNode(true);
-        var tbody = clonedTable.querySelector("tbody");
+        var pastDataTable = weekTableTemplate.content.cloneNode(true);
+        var pastDataBody = pastDataTable.querySelector("tbody");
 
+        var statsAcc = new StatsAccumulator();
         for (var r = 3; r < respLines.length; r++) {
             var respRecords = respLines[r].split(",");
             var tableRow = document.createElement("tr");
@@ -53,22 +99,27 @@ function analyzeData(btn) {
                 var cell = document.createElement("td");
                 cell.innerText = respRecords[c];
                 tableRow.appendChild(cell);
+                statsAcc.addMeal(respRecords[c], c);
             }
-            tbody.appendChild(tableRow);
+            pastDataBody.appendChild(tableRow);
         }
 
         var statsContainer = document.getElementById("stats-table");
         var statsTable = weekTableTemplate.content.cloneNode(true);
+        statsTable.querySelector("tr").prepend(document.createElement("th"))
+        var statsBody = statsTable.querySelector("tbody");
 
-        var stats = computeStats(respLines);
-        statsTable.appendChild(makeTableRow(stats[0].concat("Dining Hall")))
-        statsTable.appendChild(makeTableRow(stats[1].concat("Outside")))
-        statsTable.appendChild(makeTableRow(stats[2].concat("Not Eaten")))
+        statsAcc.reformatData();
+        statsBody.appendChild(makeTableRow(statsAcc.dhMBD));
+        statsBody.appendChild(makeTableRow(statsAcc.outMBD));
+        statsBody.appendChild(makeTableRow(statsAcc.noneMBD));
+        statsBody.appendChild(makeTableRow(statsAcc.mealsByDay));
 
+        statsTable.appendChild(document.createElement("br"))
         statsContainer.appendChild(statsTable);
 
-        pastData.appendChild(statsContainer);
-        pastData.appendChild(clonedTable);
+        pastDataDiv.appendChild(statsContainer);
+        pastDataDiv.appendChild(pastDataTable);
 
         document.getElementById("stats-top").style.display = "block";
         btn.disabled = true;
@@ -83,10 +134,6 @@ function makeTableRow(cells) {
         row.appendChild(col.cloneNode(true));
     }
     return row
-}
-
-function computeStats(respLines) {
-    var resp
 }
 
 function collapseData() {
